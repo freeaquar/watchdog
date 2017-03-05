@@ -4,7 +4,7 @@
 import re
 import time
 
-from util import url_trim
+from util import url_trim, Recorder
 
 
 class Topic(object):
@@ -21,26 +21,28 @@ class Topic(object):
 
             self._post_regex = config["post_regex"]
 
-            print "{}:{} init the topic".format(self, self._user)
+            Recorder.info(self, self._user, "init")
 
         except Exception as e:
-            print "{}:{} init err: {}|{}".format(self, self._user, type(e),
-                                                 str(e))
+            Recorder.error(self, self._user, "init failed", e)
             raise Exception(e)
 
-    def process(self):
+    def locate_post_url(self):
         while True:
-            url = self._run()
+            url = self._locate()
             if not url:
-                print ("{}:{} didn't hit the pattern and sleep for: {}s"
-                       .format(self, self._user, self._interval))
+                msg = "mismatch and sleep for {}".format(self._interval)
+                Recorder.debug(self, self._user, msg)
+
                 time.sleep(self._interval)
                 continue
 
-            print "{}:{} hit the pattern: {}".format(self, self._user, url)
+            msg = "hit the pattern: {}".format(url)
+            Recorder.info(self, self._user, msg)
+
             return url
 
-    def _run(self):
+    def _locate(self):
         try:
             r = self._session.get(self._page_url)
             url = (
@@ -52,8 +54,8 @@ class Topic(object):
         except IndexError as e:
             pass
         except Exception as e:
-            print "{}:{} _run err: {}|{}".format(self, self._user, type(e),
-                                                 str(e))
+            Recorder.error(self, self._user, "_run failed", e)
+
         return False
 
     def __repr__(self):
