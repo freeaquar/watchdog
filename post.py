@@ -3,7 +3,7 @@
 
 import re
 
-from util import url_trim
+from util import url_trim, Recorder
 
 
 class Post(object):
@@ -23,10 +23,9 @@ class Post(object):
             self._reply_args_regex = config["post_reply_args_regex"]
             self._reply_url_regex = config["post_reply_url_regex"]
 
-            print "{}:{} init the post".format(self, self._user)
+            Recorder.info(self, self._user, "init")
         except Exception as e:
-            print "{}:{} init err: {}|{}".format(self, self._user, type(e),
-                                                 str(e))
+            Recorder.error(self, self._user, "init failed", e)
             raise Exception(e)
 
     def reply(self):
@@ -42,8 +41,7 @@ class Post(object):
                 self._text = r.text
                 return
             except Exception as e:
-                print "{}:{} _get_text err: {}|{}".format(self, self._user,
-                                                          type(e), str(e))
+                Recorder.error(self, self._user, "_get_text failed", e)
 
     def _reply(self):
         url = self._get_reply_url()
@@ -57,23 +55,23 @@ class Post(object):
 
         # if the self._msg is exist in the page, do nothing
         if self._exist():
-            print "{}:{} reply exist already".format(self, self._user)
+            Recorder.info(self, self._user, "reply exist already")
             return
 
         while self._max_retry:
             try:
-                print "{}:{} try to submit comment".format(self, self._user)
+                Recorder.debug(self, self._user, "try to submit comment")
 
                 r = self._session.post(url, data=data)
                 r.raise_for_status()
 
-                print "{}:{} submit succ".format(self, self._user)
+                Recorder.info(self, self._user, "submit succ")
                 break
             except Exception as e:
-                self._max_retry -= 1
-                print "{}:{} _reply err {} {}|{}".format(
-                    self, self._name, self._max_retry, type(e), str(e)
-                )
+                msg = "_reply failed[{}]".format(self._max_retry)
+                Recorder.warn(self, self._user, msg, e)
+        else:
+            Recorder.error(self, self._user, "run out of reply request retries")
 
     def _get_reply_url(self):
         uri = re.search(self._reply_url_regex, self._text).group(1)

@@ -5,12 +5,14 @@ import gevent
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import click
 import requests
 import configparser
 
 from auth import Auth
 from topic import Topic
 from post import Post
+from util import Recorder, RecorderLevel
 
 
 class WatchDog(object):
@@ -26,22 +28,20 @@ class WatchDog(object):
         self._user = user
         self._config = config
 
-        print "{}:{} init the watchdog".format(self, self._user)
+        Recorder.info(self, self._user, "init")
 
     def monit(self):
         try:
             auth = Auth(self._session, self._user, self._config)
             auth.confirm()
-        except Exception:
-            return None
 
-        try:
             topic = Topic(self._session, self._user, self._config)
-            post_url = topic.process()
+            nt = Post(self._session, self._user, self._config,
+                      topic.locate_post_url())
 
-            nt = Post(self._session, self._user, self._config, post_url)
             nt.reply()
-        except Exception:
+        except Exception as e:
+            Recorder.error(self, self._user, "init the watchdog", e)
             return None
 
     def __repr__(self):
@@ -49,6 +49,8 @@ class WatchDog(object):
 
 
 def dispatch(fpath):
+    Recorder.info("<dispatch>", "main", "ready to dispatch")
+
     configs = configparser.ConfigParser()
     configs.read(fpath)
 
@@ -62,11 +64,15 @@ def dispatch(fpath):
 
     gevent.joinall(dog_ls)
 
-    print "all is finished"
+    Recorder.info("<dispatch>", "main", "all is finished")
 
 
-# XXX add log level
-def main():
+@click.command(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.option("--log-level", required=False,
+              type=click.Choice(["debug", "info", "warning", "error"]),
+              default="info", show_default=True, help="Log level")
+def main(log_level):
+    Recorder.current_level = getattr(RecorderLevel, log_level)
     dispatch("./instance/config.ini")
 
 

@@ -3,6 +3,8 @@
 
 import re
 
+from util import Recorder
+
 
 class Auth(object):
     """Try to login automatically.
@@ -25,9 +27,10 @@ class Auth(object):
 
             self._formhash_regex = config["formhash_regex"]
 
+            Recorder.info(self, self._user, "init")
+
         except Exception as e:
-            print "{}:{} init err: {}|{}".format(self, self._user, type(e),
-                                                 str(e))
+            Recorder.error(self, self._user, "init failed", e)
             raise Exception(e)
 
     def confirm(self):
@@ -46,13 +49,13 @@ class Auth(object):
             r = self._session.post(self._submit_url, data=data)
 
             # check if login successed
+            # XXX can't handle Verification Code
             if self._succ_flag not in r.text:
                 raise Exception("mismatch key words in the page")
 
-            print "{}:{} confirm succ".format(self, self._user)
+            Recorder.info(self, self._user, "confirm succ")
         except Exception as e:
-            print "{}:{} confirm err: {}|{}".format(self, self._user, type(e),
-                                                    str(e))
+            Recorder.error(self, self._user, "confirm failed", e)
             raise Exception(e)
 
     def __repr__(self):
