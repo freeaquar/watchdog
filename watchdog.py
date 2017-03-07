@@ -69,7 +69,7 @@ def dispatch(fpath):
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
 @click.option("--log-level", required=False,
-              type=click.Choice(["debug", "info", "warning", "error"]),
+              type=click.Choice(["debug", "info", "warn", "error"]),
               default="info", show_default=True, help="Log level")
 def main(log_level):
     Recorder.current_level = getattr(RecorderLevel, log_level)

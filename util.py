@@ -40,7 +40,7 @@ class Recorder(object):
 
     @classmethod
     def error(cls, obj, user, msg, e=""):
-        cls._output(RecorderLevel.warn, obj, user, msg, e)
+        cls._output(RecorderLevel.error, obj, user, msg, e)
 
     @classmethod
     def _output(cls, level, obj, user, msg, e):
