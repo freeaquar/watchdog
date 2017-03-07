@@ -20,7 +20,7 @@
 - 登录如果碰到验证码 -- 小憩一会吧, 暂时没处理
 
 
-### == 运行环境 ==
+### == 环境 ==
 
 - python 版本
 
@@ -45,19 +45,56 @@
 加 `-h` 查看 `Usage`, 暂时只有日志级别一个参数
 
 ```
-    $ ./watchdog.py -h
-    Usage: watchdog.py [OPTIONS]
+$ ./watchdog.py -h
+Usage: watchdog.py [OPTIONS]
 
-    Options:
-      --log-level [debug|info|warning|error]
-                                      Log level  [default: info]
-      -h, --help                      Show this message and exit.
+Options:
+  --log-level [debug|info|warning|error]
+                                  Log level  [default: info]
+  -h, --help                      Show this message and exit.
+```
 
+现在配置了 3 个用户:
+
+- fang: 一次完整的流程
+- alpha: 回复一条已经存在的消息
+- omicron: 配置缺失
+
+```
+$ ./watchdog.py
+[INFO] 2017-03-07 12:56:08: <dispatch>-main ready to dispatch
+[INFO] 2017-03-07 12:56:08: <WatchDog>-fang init
+[INFO] 2017-03-07 12:56:08: <WatchDog>-alpha init
+[INFO] 2017-03-07 12:56:08: <WatchDog>-omicron init
+[INFO] 2017-03-07 12:56:08: <Auth>-fang init
+[INFO] 2017-03-07 12:56:08: <Auth>-alpha init
+[ERROR] 2017-03-07 13:00:33: <Auth>-omicron init failed  [<type 'exceptions.KeyError'>|'name']
+[ERROR] 2017-03-07 13:00:33: <WatchDog>-omicron init the watchdog  [<type 'exceptions.Exception'>|'name']
+[INFO] 2017-03-07 12:56:09: <Auth>-alpha confirm succ
+[INFO] 2017-03-07 12:56:09: <Topic>-alpha init
+[INFO] 2017-03-07 12:56:09: <Auth>-fang confirm succ
+[INFO] 2017-03-07 12:56:09: <Topic>-fang init
+[INFO] 2017-03-07 12:56:09: <Topic>-alpha hit the pattern: http://simple.com/forum.php?mod=viewthread&tid=255&extra=page%3D1
+[INFO] 2017-03-07 12:56:09: <Post>-alpha init
+[INFO] 2017-03-07 12:56:09: <Topic>-fang hit the pattern: http://simple.com/forum.php?mod=viewthread&tid=649&extra=page%3D1
+[INFO] 2017-03-07 12:56:09: <Post>-fang init
+[INFO] 2017-03-07 12:56:09: <Post>-alpha reply exist already
+[INFO] 2017-03-07 12:56:09: <Post>-fang submit succ
+[INFO] 2017-03-07 12:56:09: <dispatch>-main all is finished
+```
+
+or 你只想看 warn 级别及以上的日志
+
+```
+$ ./watchdog.py --log-level=warn
+[ERROR] 2017-03-07 13:00:33: <Auth>-omicron init failed  [<type 'exceptions.KeyError'>|'name']
+[ERROR] 2017-03-07 13:00:33: <WatchDog>-omicron init the watchdog  [<type 'exceptions.Exception'>|'name']
 ```
 
 
-### == 一些命名 ==
+### == 命名 ==
 
+- 登录(Auth)
 - 主题(Topic)
 - 帖子(Post)
 
